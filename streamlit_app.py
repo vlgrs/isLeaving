@@ -1,9 +1,26 @@
 import streamlit as st
 import pandas as pd
+import json
 
-# Initialisation des données stockées (simple pour le développement local)
+# Chemin du fichier de sauvegarde
+DATA_FILE = "bets_data.json"
+
+# Fonction pour sauvegarder les données dans un fichier JSON
+def save_data(data):
+    with open(DATA_FILE, "w") as file:
+        json.dump(data, file)
+
+# Fonction pour charger les données depuis un fichier JSON
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+# Initialisation des données stockées
 if 'bets' not in st.session_state:
-    st.session_state.bets = []
+    st.session_state.bets = load_data()
 
 # Titre de l'application
 st.title("\U0001F37A Pariez sur le prochain départ au boulot! \U0001F379")
@@ -26,12 +43,14 @@ with st.form("bet_form"):
                 st.error("Vous avez déjà parié sur ce prénom !")
             else:
                 # Enregistrer le pari
-                st.session_state.bets.append({
+                new_bet = {
                     'Pseudo': pseudo,
                     'Type de pari': bet_type,
                     'Quantité': amount,
                     'Prénom': suggestion
-                })
+                }
+                st.session_state.bets.append(new_bet)
+                save_data(st.session_state.bets)
                 st.success(f"Merci pour votre pari, {pseudo} !")
         else:
             st.error("Veuillez remplir tous les champs pour soumettre un pari.")
